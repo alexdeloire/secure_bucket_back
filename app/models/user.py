@@ -8,3 +8,7 @@ class User(BaseModel):
     roles: list[str] = []
     disabled: bool | None = None
 
+class NewUser(BaseModel):
+    username: str
+    password: str
+    email: str

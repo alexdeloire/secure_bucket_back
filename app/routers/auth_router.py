@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 from ..controllers.auth_controller import login_check_user_and_password, check_refresh_token_and_create_access_token, logout_remove_refresh_token, register_user
 
 # Import models
-from ..models.user import User
+from ..models.user import User, NewUser
 from ..models.auth import UserAndToken
 
 auth_router = APIRouter(
@@ -51,11 +51,11 @@ async def logout(
 
 
 # Route to register a new user in the database
-# Fonction temporaire a refaire
-@auth_router.post("/register")
-async def register(request : Request, username: str, password: str, email: str):
-    # Make sure everything is sent
-    if not username or not email or not password:
-        return JSONResponse(content={"message": "Missing data"}, status_code=400)
+@auth_router.post("/signup")
+async def signup(user: NewUser):
+    # Get the data from the request
+    username = user.username
+    email = user.email
+    password = user.password
     payload = await register_user(username, email, password)
     return payload    
