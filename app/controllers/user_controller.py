@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException, status
 from ..database.db_session import get_db
-from ..models.user import User 
+from ..models.user import User, UserIdAndUsername
 
 db = get_db()
 
@@ -107,3 +107,12 @@ async def get_role_id(role_name: str) -> int:
     """
     role_id = await db.fetch_val(query, role_name)
     return role_id
+
+# Function to get a user id with its username
+async def get_user_id(username: str) -> UserIdAndUsername:
+    db = get_db()
+    query = """
+    SELECT user_id FROM users WHERE username = $1;
+    """
+    user_id = await db.fetch_val(query, username)
+    return UserIdAndUsername(user_id=user_id, username=username)

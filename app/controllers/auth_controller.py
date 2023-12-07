@@ -16,7 +16,7 @@ from pydantic import BaseModel, ValidationError
 from fastapi.responses import JSONResponse
 import os
 
-from ..controllers.user_controller import find_user_by_username, find_user_by_email, create_user
+from ..controllers.user_controller import find_user_by_username, find_user_by_email, create_user, get_user_id
 
 # Import models
 from ..models.user import User
@@ -263,3 +263,17 @@ async def register_user(username: str, email: str, password: str):
     # Create the user in the database
     payload = await create_user(user)
     return payload
+
+
+# Function to verify the user and get the user from the token
+async def verify_and_get_current_user_id(
+    security_scopes: SecurityScopes, token: Annotated[str, Depends(oauth2_scheme)]
+):
+    # Verify the token
+    await verify_token(security_scopes, token)
+    # Decode the token
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    username: str = payload.get("sub")
+    # Get the user_id from the database
+    user_id_and_username = await get_user_id(username)
+    return user_id_and_username

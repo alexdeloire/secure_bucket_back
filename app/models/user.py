@@ -12,3 +12,7 @@ class NewUser(BaseModel):
     username: str
     password: str
     email: str
+
+class UserIdAndUsername(BaseModel):
+    user_id: int
+    username: str
