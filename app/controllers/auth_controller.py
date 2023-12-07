@@ -16,7 +16,7 @@ from pydantic import BaseModel, ValidationError
 from fastapi.responses import JSONResponse
 import os
 
-from ..controllers.user_controller import find_user_by_username
+from ..controllers.user_controller import find_user_by_username, find_user_by_email, create_user
 
 # Import models
 from ..models.user import User
@@ -29,7 +29,7 @@ from ..models.auth import UserAndToken, TokenData
 # openssl rand -hex 32
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 1
+ACCESS_TOKEN_EXPIRE_MINUTES = 10
 
 
 
@@ -89,7 +89,7 @@ async def login_check_user_and_password(username: str, password: str, response: 
     )
 
     # Create refresh token
-    refresh_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 5)
+    refresh_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 3)
     refresh_token = create_token(
         data={"sub": user.username, "scopes": user.roles},
         expires_delta=refresh_token_expires,
@@ -231,3 +231,35 @@ async def verify_token(
                 detail="Not enough permissions",
                 headers={"WWW-Authenticate": authenticate_value},
             )
+
+
+# Function to check if a user exists with the given username
+async def does_user_exist(username: str):
+    user = await find_user_by_username(username)
+    if user is None:
+        return False
+    return True
+
+# Function to check if a user exists with the given email
+async def does_email_exist(email: str):
+    user = await find_user_by_email(email)
+    if user is None:
+        return False
+    return True
+
+
+async def register_user(username: str, email: str, password: str):
+    # Check if user already exists
+    user_exists = await does_user_exist(username)
+    if user_exists:
+        return JSONResponse(content={"message": "Username already exists"}, status_code=409)
+    # Check if email already exists
+    email_exists = await does_email_exist(email)
+    if email_exists:
+        return JSONResponse(content={"message": "Email already exists"}, status_code=409)
+    # Hash the password
+    hashed_password = get_password_hash(password)
+    user = User(username=username, email=email, password=hashed_password, name=username, roles=["User"], disabled=False)
+    # Create the user in the database
+    payload = await create_user(user)
+    return payload

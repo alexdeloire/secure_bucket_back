@@ -1,7 +1,5 @@
 # This file contains the business logic for authentication and authorization
 
-from ..controllers.auth_controller import get_password_hash
-
 # Imports for authentication
 from typing import Annotated
 
@@ -12,7 +10,7 @@ from fastapi.security import (
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 
-from ..controllers.auth_controller import login_check_user_and_password, check_refresh_token_and_create_access_token, logout_remove_refresh_token
+from ..controllers.auth_controller import login_check_user_and_password, check_refresh_token_and_create_access_token, logout_remove_refresh_token, register_user
 
 # Import models
 from ..models.user import User
@@ -55,17 +53,9 @@ async def logout(
 # Route to register a new user in the database
 # Fonction temporaire a refaire
 @auth_router.post("/register")
-async def register(request : Request, user: User):
-    username = user.username
-    email = user.email
-    password = user.password
-    password = get_password_hash(password)
-    query = "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING user_id;"
-    try:
-        result = await request.app.state.db.fetch_val(query, username, email, password)
-        query2 = "INSERT INTO user_roles (user_id, role_id) VALUES ($1, 2);"
-        await request.app.state.db.execute(query2, result)
-        return JSONResponse(content={"message": "User created successfully"}, status_code=201)
-    except Exception as e:
-        print(e)
-        return JSONResponse(content={"message": "Error creating user"}, status_code=500)
+async def register(request : Request, username: str, password: str, email: str):
+    # Make sure everything is sent
+    if not username or not email or not password:
+        return JSONResponse(content={"message": "Missing data"}, status_code=400)
+    payload = await register_user(username, email, password)
+    return payload    

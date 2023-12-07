@@ -1,4 +1,6 @@
-# AWI-back
+# Super Secure Backend
+
+A super secure backend for la Nuit de l'Info 2023
 
 ## Virtual python environment
 
