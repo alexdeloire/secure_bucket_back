@@ -70,6 +70,26 @@ async def find_one_post() -> Post:
             detail="Failed to retrieve post. Please try again later. " + str(e),
         )
 
+# Function to retrieve a post by ID
+async def find_post_by_id(post_id: int) -> Post:
+    query = "SELECT post_id, title, content, created_at, user_id, username FROM posts JOIN post_user USING (post_id) JOIN users USING (user_id) WHERE post_id = $1;"
+    try:
+        result = await db.fetch_row(query, post_id)
+        if result:
+            return Post(post_id=result["post_id"], title=result["title"], content=result["content"], user_id=result["user_id"], username=result["username"], created_at=result["created_at"].strftime("%Y-%m-%d %H:%M:%S"))
+        else:
+            raise RecordNotFound
+    except RecordNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve post. Please try again later. " + str(e),
+        )
+
 # Function to update a post by ID
 async def update_post(post_id: int, post: Post, user: UserIdAndUsername) -> Post:
     is_owner = await is_post_owner(post_id, user.user_id)

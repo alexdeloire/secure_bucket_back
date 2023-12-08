@@ -30,6 +30,10 @@ async def get_all_posts_route():
 async def get_post_route():
     return await find_one_post()
 
+@post_router.get("/{post_id}", response_model=Post, description="Get a post by ID")
+async def get_post_by_id_route(post_id: int):
+    return await find_post_by_id(post_id)
+
 @post_router.put("/{post_id}", response_model=Post, description="Update a post by ID")
 async def update_post_route(post_id: int, post: Post, user: Annotated[UserIdAndUsername, Security(verify_and_get_current_user_id, scopes=["User"])]):
     return await update_post(post_id, post, user)
