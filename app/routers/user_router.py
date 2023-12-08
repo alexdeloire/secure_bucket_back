@@ -6,7 +6,6 @@ from ..controllers.auth_controller import verify_token
 from ..controllers.user_controller import find_user_by_username, find_all_users, ban_user_by_username
 from ..models.user import User
 
-# fichier purement test, ne pas prendre en compte
 
 user_router = APIRouter(
     prefix="/users",
