@@ -20,6 +20,6 @@ async def get_user(username: str, token: Annotated[None, Security(verify_token, 
 async def get_all_users(token: Annotated[None, Security(verify_token, scopes=["Admin"])]):
     return await find_all_users()
 
-@user_router.put("/{username}", response_model=dict, description="Ban a user by username")
+@user_router.put("/ban/{username}", response_model=dict, description="Ban a user by username")
 async def ban_user(username: str, token: Annotated[None, Security(verify_token, scopes=["Admin"])]):
     return await ban_user_by_username(username)
