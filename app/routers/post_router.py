@@ -7,6 +7,7 @@ from app.controllers.post_controller import (
     create_post,
     find_all_posts,
     find_one_post,
+    find_post_by_id,
     update_post,
     delete_post,
 )
