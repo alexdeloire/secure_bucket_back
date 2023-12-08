@@ -45,7 +45,7 @@ async def find_all_posts() -> List[Post]:
         result = await db.fetch_rows(query)
         if result is None:
             return [] 
-        return [Post(post_id=row["post_id"], title=row["title"], content=row["content"], created_at=row["created_at"], user_id=row["user_id"], username=row["username"]) for row in result]
+        return [Post(post_id=row["post_id"], title=row["title"], content=row["content"], created_at=row["created_at"].strftime("%Y-%m-%d %H:%M:%S"), user_id=row["user_id"], username=row["username"]) for row in result]
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
