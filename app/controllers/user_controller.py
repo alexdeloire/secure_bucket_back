@@ -116,3 +116,49 @@ async def get_user_id(username: str) -> UserIdAndUsername:
     """
     user_id = await db.fetch_val(query, username)
     return UserIdAndUsername(user_id=user_id, username=username)
+
+
+# Function to get all users
+async def find_all_users() -> List[User]:
+    db = get_db()
+    query = """
+    SELECT
+        u.user_id,
+        u.username,
+        u.email,
+        u.disabled,
+        array_agg(r.role_name) AS roles
+    FROM
+        users u
+    JOIN
+        user_roles ur ON u.user_id = ur.user_id
+    JOIN
+        roles r ON ur.role_id = r.role_id
+    GROUP BY
+        u.user_id, u.username, u.email;
+    """
+    result = await db.fetch_rows(query)
+    if result is None:
+        return []
+    users = []
+    for row in result:
+        user_dict = dict(row)
+        user = User(
+            username=user_dict["username"],
+            email=user_dict["email"],
+            name=user_dict["username"], 
+            disabled=user_dict["disabled"], 
+            password="Placeholder", 
+            roles=user_dict["roles"]
+            )
+        users.append(user)
+    return users
+
+# Ban user by username
+async def ban_user_by_username(username: str):
+    db = get_db()
+    query = """
+    UPDATE users SET disabled = true WHERE username = $1;
+    """
+    await db.execute(query, username)
+    return { "message": "User successfully banned" }
